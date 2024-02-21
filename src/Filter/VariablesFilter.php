@@ -36,6 +36,18 @@ class VariablesFilter extends BaseFilter
             'str_starts_with' => \Closure::fromCallable('str_starts_with'),
             'str_ends_with' => \Closure::fromCallable('str_ends_with'),
             'matches' => fn (string $pattern, string $subject) => 1 === preg_match($pattern, $subject),
+            'musl' => function() {
+                try {
+                    exec('ldd /bin/sh' . ' 2>&1', $output, $returnCode);
+                } catch (\Throwable $e) {
+                    return false;
+                }
+                if ($returnCode !== 0) {
+                    return false;
+                }
+                $ldd = trim(implode("\n", $output));
+                return strpos($ldd, 'musl') !== false;
+            },
             'PHP_OS' => \PHP_OS,
             'PHP_OS_FAMILY' => \PHP_OS_FAMILY,
             'PHP_SHLIB_SUFFIX' => \PHP_SHLIB_SUFFIX,
